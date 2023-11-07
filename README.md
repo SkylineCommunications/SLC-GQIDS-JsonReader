@@ -81,7 +81,7 @@ The display value is a string representation of the value.
         {
             "Name": "Profit",
             "Type": "Double"
-        },
+        }
     ],
     "Rows": [
         {
