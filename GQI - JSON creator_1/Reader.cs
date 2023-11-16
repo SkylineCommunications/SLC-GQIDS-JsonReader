@@ -1,39 +1,46 @@
-﻿using Newtonsoft.Json;
-using Skyline.DataMiner.Analytics.GenericInterface;
-using SLDataGateway.API.Types.Results.Paging;
-using System;
-using System.IO;
-using System.Linq;
-using static GQIDS___JSON_reader_1.JSONDataSource;
-
-namespace GQIDS___JSON_reader_1
+﻿namespace GQIDS___JSON_reader_1
 {
+    using System;
+    using System.IO;
+    using System.Linq;
+    using Newtonsoft.Json;
+    using Skyline.DataMiner.Analytics.GenericInterface;
+    using static GQIDS___JSON_reader_1.JSONDataSource;
+
     internal class Reader
     {
         private string _file;
         private JSONDataSource _source;
-        private GQIColumn[] _columns;
+        private GQIColumn[] _columnCache;
+        private GQIPage _pageCache;
 
         public Reader(string file)
         {
             if (file == null)
                 throw new ArgumentNullException(nameof(file));
 
-            _file = Path.Combine(Scanner.DIRECTORY, file);
+            _file = Path.Combine(JSONReaderDataSource.DIRECTORY, file);
         }
 
         internal GQIColumn[] GetColumns()
         {
+            if (_columnCache != null)
+                return _columnCache;
+
             EnsureRead();
-            _columns = ParseColumns();
-            return _columns;
+            _columnCache = ParseColumns();
+            return _columnCache;
         }
 
         internal GQIPage GetData()
         {
+            if (_pageCache != null)
+                return _pageCache;
+
             EnsureRead();
             var rows = ParseRows();
-            return new GQIPage(rows) { HasNextPage = false };
+            _pageCache = new GQIPage(rows) { HasNextPage = false };
+            return _pageCache;
         }
 
         private void EnsureRead()
@@ -60,6 +67,8 @@ namespace GQIDS___JSON_reader_1
                 return new GQIDateTimeColumn(column.Name);
             else if (String.Equals(column.Type, "double", StringComparison.OrdinalIgnoreCase))
                 return new GQIDoubleColumn(column.Name);
+            else if (String.Equals(column.Type, "boolean", StringComparison.OrdinalIgnoreCase))
+                return new GQIBooleanColumn(column.Name);
             else
                 throw new GenIfException($"Column of type '{column.Type}' not supported.");
         }
@@ -72,7 +81,7 @@ namespace GQIDS___JSON_reader_1
         private GQIRow ParseRow(JSONRow row)
         {
             return new GQIRow(
-                row.Cells?.Select((x, i) => ParseCell(x, _columns[i])).ToArray() ?? new GQICell[0]
+                row.Cells?.Select((x, i) => ParseCell(x, _columnCache[i])).ToArray() ?? new GQICell[0]
                 );
         }
 
@@ -101,6 +110,10 @@ namespace GQIDS___JSON_reader_1
                 else if (column is GQIDoubleColumn)
                 {
                     return Convert.ToDouble(value);
+                }
+                else if (column is GQIBooleanColumn)
+                {
+                    return Convert.ToBoolean(value);
                 }
                 else
                 {

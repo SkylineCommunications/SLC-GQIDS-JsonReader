@@ -43,10 +43,11 @@ The type is a string that identifies the content type of that column.
 
 Currently the following types are available:
 
-* string
-* int
+* boolean
 * datetime
 * double
+* int
+* string
 
 ### Rows
 
@@ -122,3 +123,9 @@ The display value is a string representation of the value.
         }
     ]
 }
+```
+
+## Performance
+
+To enhance efficiency, we've implemented a caching mechanism. Rather than performing numerous disk reads each time the ad hoc data source is accessed, it now only conducts these reads initially and upon any data alterations within the 'GQI data sources' directory. This is achieved using a FileSystemWatcher, which monitors changes in the GQI data sources directory. Upon any modifications, the entire cache of the JSON reader is reset.
+
