@@ -9,7 +9,7 @@ namespace GQIDS___JSON_reader_1
     [GQIMetaData(Name = "JSON Reader")]
     public class JSONReaderDataSource : IGQIDataSource, IGQIInputArguments
     {
-        internal const string DIRECTORY = @"C:\Skyline DataMiner\Documents\GQI data sources\";
+        internal const string DIRECTORY = @"C:\Skyline DataMiner\Documents\DMA_COMMON_DOCUMENTS\GQI data sources";
         private GQIStringDropdownArgument _fileArg;
         private Reader _reader;
 
